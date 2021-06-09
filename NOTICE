@@ -1,6 +1,13 @@
+This package contains code from third-party packages, each governed by the 
+licenses indicated below:
+
+NOTICES:
+
+Transformers.jl
+
 MIT License
 
-Copyright (c) 2021 Irhum Shafkat
+Copyright (c) 2019 Peter Cheng
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

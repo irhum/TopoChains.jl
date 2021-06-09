@@ -1,11 +1,16 @@
-using Documenter, Stacks
+push!(LOAD_PATH,"../src/")
 
-makedocs(sitename="Stacks.jl",
-         pages = Any[
-           "Home" => "stacks.md",
-         ],
-         )
+using Documenter
+using Stacks
+
+makedocs(
+    sitename = "Stacks",
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true"
+    ),
+    modules = [Stacks]
+)
 
 deploydocs(
-    repo = "github.com/irhum/Stacks.jl.git",
+    repo = "https://github.com/irhum/Stacks.jl"
 )
