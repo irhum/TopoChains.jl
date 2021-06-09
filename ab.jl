@@ -8,3 +8,8 @@ a = rand(5000)
 b = rand(5000)
 
 topo(repeat([x -> x.^2, x -> x.^3, (x, y) -> x .- y], 8), a, b)
+
+show_stackfunc(topo)
+Stacks.print_topo(topo)
+
+methods(Stacks.print_topo)
