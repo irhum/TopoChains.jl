@@ -3,6 +3,10 @@ uuid = "21ca0261-441d-5938-ace7-c90938fde4d4"
 authors = ["irhum <13271155+irhum@users.noreply.github.com>", "chengchingwen <adgjl5645@hotmail.com>"]
 version = "0.1.0"
 
+[deps]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+
 [compat]
 julia = "1.5, 1.6"
 

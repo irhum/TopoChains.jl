@@ -1,10 +1,10 @@
 using Stacks
 
+using Test 
+
 const tests = [
     "nntopo",
 ]
-
-Random.seed!(0)
 
 @testset "Stacks" begin
   for t in tests
