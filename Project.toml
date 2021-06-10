@@ -4,8 +4,8 @@ authors = ["irhum <13271155+irhum@users.noreply.github.com>", "chengchingwen <ad
 version = "0.1.0"
 
 [deps]
-Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 julia = "1.5, 1.6"
