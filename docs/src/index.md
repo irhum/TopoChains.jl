@@ -2,32 +2,45 @@
 
 *Adapted from [Transformers.jl](https://chengchingwen.github.io/Transformers.jl/dev/stacks/)*
 
-Stacks.jl is centered around looking at models as *compositions* of functions that can take any number of inputs, and produce any number of outputs. To that end, this package provides two core features:
-* `@nntopo`: A macro that uses a compact DSL (Domain Specific Language) to store the *structure* of the function composition in an `NNTopo`
+Stacks.jl allows you to cleanly build flexible neural networks whose layers can take any number of inputs, and produce any number of outputs. It achieves this by seperating the *layers* themselves from the *structure* of the inputs/outputs the layers take in/produce. To accomplish this, this package provides two core features:
+* `@nntopo`: A macro that uses a compact DSL (Domain Specific Language) to store the *structure* of the function composition in an `NNTopo`.
 * `Stack`: Similar to a `Flux.Chain`, except it takes in an `NNTopo` as its first argument to determine which inputs to pass into each layer.  
 
-## NNTopo Syntax
+## NNTopo
+We store the structure of the model in a `NNTopo`, short for "Neural Network Topology". At its core, it is simply used to define inputs and outputs for each function in a sequence of function calls. Consider it a supercharged version of Julia's piping operator (`|>`). 
 
-We call the DSL NNTopo, short for "Neural Network Topology". At its core, it is simply used to define where the input & output should be in a sequence of function calls. Consider it a supercharged complex version of Julia's piping operator (`|>`).
+`NNTopo`s are usually created by using the `@nntopo` macro, and its syntax is best explained through examples.
 
 ### Chaining functions
 
-For example:
+Suppose you want to chain the functions `g`, `f` and `h` in the following way:
 
 ```julia
 y = h(f(g(x))) # a chain of function calls
+```
 
+You could instead write the following:
+
+```
+julia
 # or equivalently
 a = g(x)
 b = f(a)
 y = h(b)
-
-# this is also equivalent to 
-topo = @nntopo x => a => b => y # first we define the topology/architecture
-y = topo((g, f, h), x) #then call on the given functions
 ```
 
-Each `=>` represents a function call, with the left hand side being the input argument and right hand side being the symbol used to represent the output. Note that `@nntopo` simply creates the *structure* of the function calls; it does not actually *perform* the function calls until the generated `NNTopo` struct is called with concrete functions (in this case `(g, f, h)`)
+Or you could take the Stacks.jl approach, which is to seperate the *structure* from the *functions*:
+```
+julia
+topo = @nntopo x => a => b => y # first we define the topology/architecture
+y = topo((g, f, h), x) # then call on the given functions
+```
+
+First, we create `topo` (which has type `NNTopo`) using `@nntopo`. The inputs to `@nntopo` are parsed in the following way:
+* Each variable name (e.g `b`) is a symbol that represents a function input/output. Note that these symbols have no relation with globally defined variables (in the same way that `a` in `f(a) = a^2` has no relation with a previously defined `a` in the Julia session)
+* Each `=>` represents a function call, with the left hand side being the input argument and right hand side being the symbol used to represent the output. 
+
+Note that `@nntopo` simply creates the *structure* of the function calls; it does not actually *perform* the function calls until the generated `NNTopo` struct is called with concrete functions (in this case `(g, f, h)`)
 
 ### Multiple arguments & skip connections
 
@@ -58,7 +71,7 @@ print_topo(topo; models=(f, g, h, k))
 # end
 ```
 
-### Specifying variables
+### Seperating inputs and outputs
 Notice that we use a `:` to seperate the input/output variable names for each function call. If the `:` is not present, we will by default assume that all output variables are the inputs of the next function call. i.e. `x => (t1, t2) => y` is equivalent to `x => (t1, t2):(t1, t2) => y`. 
 
 We can also return multiple variables, so the complete syntax can be viewed as:
