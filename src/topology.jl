@@ -8,23 +8,23 @@ x => 3 ==> x => a => a => a ==> x = m[1](a); a = m[1](a); a = m[1](a)
 =#
 
 """
-    nntopo"pattern"
+    @functopo_str "structure"
 
-the @nntopo string
+Similar to @functopo, except that `structure` is a `String`. Useful when performing local interpolation of values into `structure`.
 """
-macro nntopo_str(str)
-  :(NNTopo($(esc(str))))
+macro functopo_str(str)
+  :(FuncTopo($(esc(str))))
 end
 
 """
-    @nntopo structure
+    @functopo structure
 
-Create a `NNTopo` to apply functions according to the given `structure`.
+Create a `FuncTopo` to apply functions according to the given `structure`.
 
 # Example
 ```jldoctest
-julia> @nntopo (x1, x2):(x1, x2) => a:x1 => b:(a, b) => c => o
-NNTopo{"(x1, x2):(x1, x2) => (a:x1 => (b:(a, b) => (c => o)))"}
+julia> @functopo (x1, x2):(x1, x2) => a:x1 => b:(a, b) => c => o
+FuncTopo{"(x1, x2):(x1, x2) => (a:x1 => (b:(a, b) => (c => o)))"}
 function(model, x1, x2)
     a = model[1](x1, x2)
     b = model[2](x1)
@@ -34,8 +34,8 @@ function(model, x1, x2)
 end
 ```
 """
-macro nntopo(expr)
-  NNTopo(interpolate(__module__, expr))
+macro functopo(expr)
+  FuncTopo(interpolate(__module__, expr))
 end
 
 isinterpolate(x) = false
@@ -53,26 +53,26 @@ function interpolate(m::Module, ex::Expr)
 end
 
 """
-    NNTopo(s)
+    FuncTopo(s)
 
 the type of a sequence of function
 """
-struct NNTopo{FS} end
+struct FuncTopo{FS} end
 
-Base.getproperty(nt::NNTopo, s::Symbol) = s == :fs ? Base.getproperty(nt, Val(:fs)) : error("type NNTopo has no field $s")
-Base.getproperty(::NNTopo{FS}, ::Val{:fs}) where FS = string(FS)
+Base.getproperty(nt::FuncTopo, s::Symbol) = s == :fs ? Base.getproperty(nt, Val(:fs)) : error("type FuncTopo has no field $s")
+Base.getproperty(::FuncTopo{FS}, ::Val{:fs}) where FS = string(FS)
 
-NNTopo(s::String) = NNTopo(Meta.parse(s))
-NNTopo(ex::Expr) = islegal(ex) ?
-  NNTopo{Symbol(ex)}() :
+FuncTopo(s::String) = FuncTopo(Meta.parse(s))
+FuncTopo(ex::Expr) = islegal(ex) ?
+  FuncTopo{Symbol(ex)}() :
   error("topo pattern illegal")
 
 genline(name, arg::Symbol, m, i::Int) = Expr(:(=), name, Expr(:call, :($m[$i]), arg))
 genline(name, args::Expr, m, i::Int) = Expr(:(=), name, Expr(:call, :($m[$i]), args.args...))
 
-nntopo_impl(s::Symbol) = nntopo_impl(string(s))
-nntopo_impl(sf::String) = nntopo_impl(Meta.parse(sf))
-function nntopo_impl(pattern)
+functopo_impl(s::Symbol) = functopo_impl(string(s))
+functopo_impl(sf::String) = functopo_impl(Meta.parse(sf))
+function functopo_impl(pattern)
   m = :model
   xs = :xs
 
@@ -133,20 +133,20 @@ function nntopo_impl(pattern)
   Expr(fbody...)
 end
 
-@generated function (nt::NNTopo{FS})(model, xs...) where {FS}
-  return nntopo_impl(FS)
+@generated function (nt::FuncTopo{FS})(model, xs...) where {FS}
+  return functopo_impl(FS)
 end
 
-function Base.show(io::IO, nt::NNTopo)
-  println(io, "NNTopo{\"$(nt.fs)\"}")
+function Base.show(io::IO, nt::FuncTopo)
+  println(io, "FuncTopo{\"$(nt.fs)\"}")
   print_topo(io, nt)
   io
 end
 
-print_topo(nt::NNTopo; models=nothing) = print_topo(stdout, nt; models=models)
+print_topo(nt::FuncTopo; models=nothing) = print_topo(stdout, nt; models=models)
 
-function print_topo(io::IO, nt::NNTopo; models=nothing)
-  body = nntopo_impl(Meta.parse(nt.fs)).args
+function print_topo(io::IO, nt::FuncTopo; models=nothing)
+  body = functopo_impl(Meta.parse(nt.fs)).args
   farg = join(body[1].args[1].args, ", ")
   println(io, models == nothing ? "function(model, $farg)" : "function($farg)")
   i = 1

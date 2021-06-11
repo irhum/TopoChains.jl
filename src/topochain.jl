@@ -1,21 +1,21 @@
 using MacroTools: @forward, postwalk
 
 """
-    Stack(topo::NNTopo, layers...)
+    TopoChain(topo::FuncTopo, layers...)
 
-Similar to a Flux.Chain, with the addition of the use of an NNTopo to define the order/structure of the functions called.
+Similar to a Flux.Chain, with the addition of the use of an FuncTopo to define the order/structure of the functions called.
 
 # Example
 ```jldoctest
-julia> topo = @nntopo (x1, x2):x1 => a:x2 => b:(a, b) => c => o
+julia> topo = @functopo (x1, x2):x1 => a:x2 => b:(a, b) => c => o
 
-julia> model = Stack(topo,
+julia> model = TopoChain(topo,
                 Dense(32, 64),
                 Dense(32, 64),
                 (x, y) -> x .* y, 
                 Dropout(0.1))
 
-Stack(Dense(32, 64), Dense(32, 64), #19, Dropout(0.1)) representing the following function composition: 
+TopoChain(Dense(32, 64), Dense(32, 64), #19, Dropout(0.1)) representing the following function composition: 
 function(x1, x2)
     a = Dense(32, 64)(x1)
     b = Dense(32, 64)(x2)
@@ -25,14 +25,14 @@ function(x1, x2)
 end
 ```
 """
-struct Stack{T<:Tuple, FS}
+struct TopoChain{T<:Tuple, FS}
     models::T
-    topo::NNTopo{FS}
-    Stack(topo::NNTopo{FS}, xs...) where FS = new{typeof(xs), FS}(xs, topo)
+    topo::FuncTopo{FS}
+    TopoChain(topo::FuncTopo{FS}, xs...) where FS = new{typeof(xs), FS}(xs, topo)
 end
 
-@generated function (s::Stack{TP, FS})(xs...) where {TP, FS}
-    _code = nntopo_impl(FS)
+@generated function (s::TopoChain{TP, FS})(xs...) where {TP, FS}
+    _code = functopo_impl(FS)
     n = fieldcount(TP)
     ms = [Symbol(:__model, i, :__) for i = 1:n]
     head = Expr(:(=), Expr(:tuple, ms...), :(s.models))
@@ -49,14 +49,14 @@ end
     return code
 end
 
-@forward Stack.models Base.getindex, Base.length
+@forward TopoChain.models Base.getindex, Base.length
 
-function Base.show(io::IO, s::Stack)
-    print(io, "Stack(")
+function Base.show(io::IO, s::TopoChain)
+    print(io, "TopoChain(")
     join(io, s.models, ", ")
     print(io, ") representing the following function composition: \n")
     print_topo(io, s.topo; models=s.models)
 end
 
-"show the structure of the Stack function"
-show_stackfunc(s::Stack) = print_topo(s.topo; models=s.models)
+"show the structure of the TopoChain function"
+show_topochainfunc(s::TopoChain) = print_topo(s.topo; models=s.models)

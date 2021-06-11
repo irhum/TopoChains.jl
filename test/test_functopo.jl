@@ -5,16 +5,16 @@ g1(a, b) = (a*b, a-b)
 h1(a, b) = a^b
 k(a, b, c) = (a + b) / c
 
-@testset "NNTopo" begin
-    using Stacks: print_topo
+@testset "FuncTopo" begin
+    using TopoChains: print_topo
     f(x) = x+1
     g(x) = x+2
     h(x) = x+3
 
-    topo1 = @nntopo x => a => b => y
+    topo1 = @functopo x => a => b => y
     @test topo1((f,g,h), 10) == h(g(f(10)))
 
-    topo2 = @nntopo x => 4 => y
+    topo2 = @functopo x => 4 => y
     @test topo2((f,f,f,f, g), 10) == g(f(f(f(f(10)))))
 
 
@@ -24,7 +24,7 @@ k(a, b, c) = (a + b) / c
     w = h1(x4, z1)
     y = k(x2, z2, w)
 
-    topo3 = @nntopo (x1, x2, x3, x4):(x1, x2) => t:(t, x3) => (z1, z2):(x4, z1) => w:(x2, z2, w) => y
+    topo3 = @functopo (x1, x2, x3, x4):(x1, x2) => t:(t, x3) => (z1, z2):(x4, z1) => w:(x2, z2, w) => y
     @test topo3((f1, g1, h1, k), x1, x2, x3, x4) ≈ y
 
 
@@ -49,7 +49,7 @@ end
 """
     end
 
-    topo = @nntopo((e, m, mask):e → pe:(e, pe) → t → (t:(t, m, mask) → t:(t, m, mask)) → $N:t → c)
+    topo = @functopo((e, m, mask):e → pe:(e, pe) → t → (t:(t, m, mask) → t:(t, m, mask)) → $N:t → c)
 
 
     let STDOUT = stdout
@@ -77,7 +77,7 @@ end
     end
 
     localn = 3
-    topo = @nntopo_str "(e, m, mask):e → pe:(e, pe) → t → (t:(t, m, mask) → t:(t, m, mask)) → $localn:t → c"
+    topo = @functopo_str "(e, m, mask):e → pe:(e, pe) → t → (t:(t, m, mask) → t:(t, m, mask)) → $localn:t → c"
 
 
     let STDOUT = stdout
@@ -109,7 +109,7 @@ end
         (outRead, outWrite) = redirect_stdout()
 
 
-        topo = @nntopo x => ((y => z => t) => 3 => w) => 2
+        topo = @functopo x => ((y => z => t) => 3 => w) => 2
         print_topo(outWrite, topo)
         close(outWrite)
 
@@ -142,7 +142,7 @@ end
     let STDOUT = stdout
         (outRead, outWrite) = redirect_stdout()
 
-        topo = @nntopo x => y' => 3 => z
+        topo = @functopo x => y' => 3 => z
         print_topo(outWrite, topo)
         close(outWrite)
 
@@ -169,7 +169,7 @@ end
     let STDOUT = stdout
         (outRead, outWrite) = redirect_stdout()
 
-        topo = @nntopo (x,y) => (a,b,c,d') => (w',r',y) => (m,n)' => z
+        topo = @functopo (x,y) => (a,b,c,d') => (w',r',y) => (m,n)' => z
         print_topo(outWrite, topo)
         close(outWrite)
 

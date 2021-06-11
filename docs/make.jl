@@ -1,14 +1,14 @@
 using Documenter
-using Stacks
+using TopoChains
 
 makedocs(
-    sitename = "Stacks",
+    sitename = "TopoChains",
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true"
     ),
-    modules = [Stacks]
+    modules = [TopoChains]
 )
 
 deploydocs(
-    repo = "https://github.com/irhum/Stacks.jl"
+    repo = "https://github.com/irhum/TopoChains.jl"
 )

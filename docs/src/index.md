@@ -1,6 +1,6 @@
 ```@meta
 DocTestSetup = quote
-  using Stacks
+  using TopoChains
   using Flux
 end
 ```
@@ -9,29 +9,31 @@ end
 
 *Adapted from [Transformers.jl](https://chengchingwen.github.io/Transformers.jl/dev/stacks/)*
 
-Stacks.jl allows you to cleanly build flexible neural networks whose layers can take any number of inputs, and produce any number of outputs. It achieves this by seperating the *layers* themselves from the *structure* of the inputs/outputs the layers take in/produce. To accomplish this, this package provides two core features:
-* `@nntopo`: A macro that uses a compact DSL (Domain Specific Language) to store the *structure* of the function composition in an `NNTopo`.
-* `Stack`: Similar to a `Flux.Chain`, except it takes in an `NNTopo` as its first argument to determine which inputs to pass into each layer.  
+TopoChains.jl allows you to cleanly build flexible neural networks whose layers can take any number of inputs, and produce any number of outputs. It achieves this by seperating the *layers* from the overall *topology* (that is, the structure) of the model. This is done through an instance of the `FuncTopo` type, which specifies the inputs/outputs the layers take in/produce. 
 
-## Stack
-A `Stack` is quite similar to a `Flux.Chain` and indeed comes with many of the same features, such as parameter collection, indexing, slicing, etc. The big change is that the first input to a `Stack` is an `NNTopo`, which specifies *how* the layers should be called, This allows us to flexibly build complex architectures.
+This package provides two core features:
+* `@functopo`: A macro that uses a compact DSL (Domain Specific Language) to store the structure of the model in a `FuncTopo`.
+* `TopoChain`: Similar to a `Flux.Chain`, except it takes in an `FuncTopo` as its first argument to determine how to handle the multiple inputs/outputs across layers.
 
-```@docs
-Stack
-```
-
-As we can see, with the help of the `NNTopo`, the `Stack` not only holds information about the layers in a model, but also how to *call* the layers in a model as well.
-
-## NNTopo
-We store the structure of the model in a `NNTopo`, short for "Neural Network Topology". At its core, it is simply used to define inputs and outputs for each function in a sequence of function calls. Consider it a supercharged version of Julia's piping operator (`|>`). 
-
-`NNTopo`s are usually created by using the `@nntopo` macro as shown:
+## TopoChain
+A `TopoChain` is similar to a `Flux.Chain` and comes with many of the same features, such as parameter collection, indexing, slicing, etc. The big change is that the first input to a `TopoChain` is a `FuncTopo`, which specifies how the layers should be called, This allows us to flexibly build complex architectures.
 
 ```@docs
-@nntopo
+TopoChain
 ```
 
-We now take a look at how `@nntopo` is used, as well a deep dive into the syntax used in `structure` in the following sections, so you can write your own ones for use in your own models!
+As we can see, with the help of the `FuncTopo`, the `TopoChain` not only holds the layers in a model, but also information on how to call the layers in a model as well.
+
+## FuncTopo
+We store the structure of the model in a `FuncTopo`, short for "Function Topology", by noting that a model is essentially a large function composed of many smaller functions. At its core, it is simply used to define inputs and outputs for each function in a sequence of function calls. Consider it a supercharged version of Julia's piping operator (`|>`). 
+
+`FuncTopo`s are usually created by using the `@functopo` macro as shown:
+
+```@docs
+@functopo
+```
+
+We now take a look at how `@functopo` is used, as well a deep dive into the syntax used in `structure` in the following sections, so you can write your own ones for use in your own models!
 
 ### A first example
 
@@ -52,17 +54,17 @@ c = h(a, b)
 o = m(c)
 ```
 
-This is functional, but gets increasingly unwieldy as the number of functions/layers in your models grow. With the Stacks.jl approach, we seperate the *structure* from the actual *function calls*. In this case, we first define the structure as follows:
+This is functional, but gets increasingly unwieldy as the number of functions/layers in your models grow. With the TopoChains.jl approach, we seperate the structure from the actual function calls. In this case, we first define the structure as follows:
 
 ```julia
-topo = @nntopo (x1, x2):(x1, x2) => a:x1 => b:(a, b) => c => o
+topo = @functopo (x1, x2):(x1, x2) => a:x1 => b:(a, b) => c => o
 ```
 
-The `@nntopo` macro then takes the information given, and produces the `NNTopo` instance `topo` that knows *how* to call the functions, once given the functions: 
+The `@functopo` macro then takes the information given, and produces the `FuncTopo` instance `topo` that keeps track of how to call the functions, once given the functions: 
 
 ```julia
 topo
-# NNTopo{"(x1, x2):(x1, x2) => (a:x1 => (b:(a, b) => (c => o)))"}
+# FuncTopo{"(x1, x2):(x1, x2) => (a:x1 => (b:(a, b) => (c => o)))"}
 # function(model, x1, x2)
 #     a = model[1](x1, x2)
 #     b = model[2](x1)
@@ -72,7 +74,7 @@ topo
 # end
 ```
 
-Here, `model` stands in for an iterable (e.g. a `Tuple` or `Vector`) of functions and layers. While the most typical use of an `NNTopo` will be to use it as input to a `Stack`, we can indeed use `topo` directly by passing in the functions and inputs:
+Here, `model` stands in for an iterable (e.g. a `Tuple` or `Vector`) of functions and layers. While the most typical use of an `FuncTopo` will be passing it as input to a `TopoChain`, we can indeed use `topo` directly by passing in the functions and inputs:
 
 ```julia
 x1 = 3
@@ -88,9 +90,9 @@ topo((f, g, h, m), x1, x2) # 2
 
 Let's take a deep dive into the syntax used in defining the `structure` here.
 
-### The syntax of NNTopo
+### The syntax of FuncTopo
 #### 1. Variable names
-We use multiple variable names when defining the structure (e.g. `x`, `c`, etc.). These are the names of the intermediate outputs in the function generated by `NNTopo`. Similar to how `x` in `g(x) = x^3` has no relation with a previously defined `x` in the Julia session, the variables used to specify the structure have no relation with previously defined variables.
+We use multiple variable names when defining the structure (e.g. `x`, `c`, etc.). These are the names of the intermediate outputs in the function generated by `FuncTopo`. Similar to how `x` in `g(x) = x^3` has no relation with a previously defined `x` in the Julia session, the variables used to specify the structure have no relation with previously defined variables.
 
 #### 2. Applying functions
 Each application of a function is represented with a `=>`, with the input variables on the left and output variables on the right. For instance, `a => b` means "take the variable `a` and pass it to the function to produce the output `b`. This also allows us to chain functions together. Suppose you want to chain the functions `p`, `q` and `r` as follows: 
@@ -99,11 +101,11 @@ Each application of a function is represented with a `=>`, with the input variab
 y = r(q(p(x))) 
 ```
 
-You could equivalently write the following with the Stacks.jl approach, seperating the *structure* from the *functions*:
+You could equivalently write the following with the TopoChains.jl approach, seperating the structure from the functions:
 
 ```
 julia
-topo = @nntopo x:x => a:a => b:b => y 
+topo = @functopo x:x => a:a => b:b => y 
 y = topo((p, q, r), x) 
 ```
 
@@ -114,19 +116,17 @@ When the actual function calls are made, the functions are used in the order the
 Notice that we use a `:` to seperate the input/output variable names for each function call. If the `:` is not present, we will by default assume that all output variables are the inputs of the next function call. This can be used to simplify `structure`s. Above, we wrote
 
 ```julia
-@nntopo x:x => a:a => b:b => y 
+@functopo x:x => a:a => b:b => y 
 ```
 
 when we could just as well have written
 
 ```julia
-@nntopo x => a => b => y 
+@functopo x => a => b => y 
 ```
 
 #### 4. Multiple inputs and outputs
 When a function has multiple inputs/outputs, we use a *tuple* of variables instead of variables. For instance, a function that takes two inputs and produces three outputs would be specified as `(a, b) => (x, y, z)`
-
-The core promise of Stacks.jl isn't just to enable skip connections of course, but to enable you to cleanly write complex multi-input multi-output models
 
 #### Summary
 The complete syntax for a `structure` can then be viewed as:
@@ -142,14 +142,14 @@ Suppose in the structure of your model, there are repeated substructures. For in
 And say that this pair structure is repeated 3x in your model. Instead of writing it out in full, you can do so more concisely with the following syntax:
 
 ```julia
-topo = @nntopo (y => (z1, z2) => t) => 3
+topo = @functopo (y => (z1, z2) => t) => 3
 ```
 
 When the output of a `=>` is an integer `N` instead of a variable, instead of applying a function we *repeat* the sub-structure (specified in between the brackets `(` and `)`) N times. Indeed, we can see this produces the expected behavior:
 
 ```julia
 topo 
-# NNTopo{"(y => ((z1, z2) => t)) => 3"}
+# FuncTopo{"(y => ((z1, z2) => t)) => 3"}
 # function(model, y)
 #     (z1, z2) = model[1](y)
 #     t = model[2](z1, z2)
@@ -162,13 +162,13 @@ topo
 ```
 
 ### Nested repeated substructures
-We can also nest our substructure repeats. For instance:
+We can also nest our substructure repeats. This allows us to quickly specify complex models rather concisely. For instance:
 
 ```julia
-topo = @nntopo x => ((y => z => t) => 3 => w) => 2
+topo = @functopo x => ((y => z => t) => 3 => w) => 2
 
 topo
-# NNTopo{"x => (((y => (z => t)) => (3 => w)) => 2)"}
+# FuncTopo{"x => (((y => (z => t)) => (3 => w)) => 2)"}
 # function(model, x)
 #     y = model[1](x)
 #     z = model[2](y)
