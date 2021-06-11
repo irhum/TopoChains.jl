@@ -10,5 +10,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "https://github.com/irhum/TopoChains.jl"
+    repo = "https://github.com/irhum/topochains.jl"
 )
