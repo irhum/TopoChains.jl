@@ -2,7 +2,7 @@ module Stacks
 
 using Requires
 
-export NNTopo, @nntopo_str, @nntopo, print_topo
+export NNTopo, @nntopo_str, @nntopo
 export Stack, show_stackfunc
 
 include("code.jl")

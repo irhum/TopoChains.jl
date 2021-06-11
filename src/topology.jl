@@ -17,9 +17,21 @@ macro nntopo_str(str)
 end
 
 """
-    @nntopo pattern
+    @nntopo structure
 
-create the function according to the given pattern
+Create an `NNTopo` to apply functions according to the given `structure`.
+
+# Example
+```jldoctest
+julia> @nntopo x:x => h1:x => h2:(h1, h2) => o
+NNTopo{"x:x => (h1:x => (h2:(h1, h2) => o))"}
+function(model, x)
+    h1 = model[1](x)
+    h2 = model[2](x)
+    o = model[3](h1, h2)
+    o
+end
+```
 """
 macro nntopo(expr)
   NNTopo(interpolate(__module__, expr))
@@ -131,10 +143,11 @@ function Base.show(io::IO, nt::NNTopo)
 end
 
 print_topo(nt::NNTopo; models=nothing) = print_topo(stdout, nt; models=models)
+
 function print_topo(io::IO, nt::NNTopo; models=nothing)
   body = nntopo_impl(Meta.parse(nt.fs)).args
   farg = join(body[1].args[1].args, ", ")
-  println(io, "topo_func(model, $farg)")
+  println(io, models == nothing ? "function(model, $farg)" : "function($farg)")
   i = 1
   sname = Dict{String, String}()
   si = 1
@@ -143,17 +156,17 @@ function print_topo(io::IO, nt::NNTopo; models=nothing)
     if occursin("#", name)
       args = string(l.args[2])
       sname[name] = "%$si"
-      println(io, "\t$(sname[name]) = $args")
+      println(io, "    $(sname[name]) = $args")
       si+=1
     else
       args = join(l.args[2].args[2:end], ", ")
       model = models === nothing ? "model[$i]" : string(models[i])
-      println(io, "\t$name = $model($args)")
+      println(io, "    $name = $model($args)")
       i+=1
     end
   end
   out = replace(string(body[end]), r"##%#\d+" => s->sname[s])
-  println(io, "\t$out")
+  println(io, "    $out")
   println(io, "end")
 end
 

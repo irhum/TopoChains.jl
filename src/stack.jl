@@ -3,7 +3,7 @@ using MacroTools: @forward, postwalk
 """
     Stack(topo::NNTopo, layers...)
 
-like Flux.Chain, but you can use a NNTopo to define the order/structure of the function called.
+Like Flux.Chain, but you can use a NNTopo to define the order/structure of the function called.
 """
 struct Stack{T<:Tuple, FS}
     models::T
@@ -34,7 +34,8 @@ end
 function Base.show(io::IO, s::Stack)
     print(io, "Stack(")
     join(io, s.models, ", ")
-    print(io, ")")
+    print(io, ") representing the following function composition: \n")
+    print_topo(io, s.topo; models=s.models)
 end
 
 "show the structure of the Stack function"
