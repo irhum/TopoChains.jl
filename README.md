@@ -1,7 +1,7 @@
 # TopoChains.jl
 
 <p align="center">
-<img width="400px" src="https://raw.githubusercontent.com/irhum/TopoChains.jl/master/docs/src/assets/logo.png"/>
+<img width="300px" src="/docs/src/assets/logo.png"/>
 </p>
 
 [![][docs-dev-img]][docs-dev-url]
@@ -15,12 +15,12 @@ The `TopoChain` was originally designed as the `Stack`, as part of [Transformers
 Suppose you want to define the following model:
 
 <p align="center">
-<img width="400px" src="/docs/src/assets/example2.png"/>
+<img width="275px" src="/docs/src/assets/example2.png"/>
 </p>
 
 First, we define the structure of the model:
 ```julia
-topo = @functopo (x1, x2):x1 => a:x2 => b:(a, b) => c => o
+topo = @functopo x:x => a:x => b:(a, b) => c => o
 ```
 
 Then we define the model itself:
@@ -36,11 +36,11 @@ And that's it, you're done! You can see that the model both contains your layers
 
 ```julia
 model
-# TopoChain(Dense(32, 64), Dense(32, 64), #19, Dropout(0.1)) representing the following function composition: 
-# function(x1, x2)
-#     a = Dense(32, 64)(x1)
-#     b = Dense(32, 64)(x2)
-#     c = #19(a, b)
+# TopoChain(Dense(32, 64), Dense(32, 64), #7, Dropout(0.1)) representing the following function composition: 
+# function(x)
+#     a = Dense(32, 64)(x)
+#     b = Dense(32, 64)(x)
+#     c = #7(a, b)
 #     o = Dropout(0.1)(c)
 #     o
 # end
