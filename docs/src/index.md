@@ -16,7 +16,7 @@ This package provides two core features:
 * `TopoChain`: Similar to a `Flux.Chain`, except it takes in an `FuncTopo` as its first argument to determine how to handle the multiple inputs/outputs across layers.
 
 ## TopoChain
-A `TopoChain` is similar to a `Flux.Chain` and comes with many of the same features, such as parameter collection, indexing, slicing, etc. The big change is that the first input to a `TopoChain` is a `FuncTopo`, which specifies how the layers should be called, This allows us to flexibly build complex architectures.
+A `TopoChain` is similar to a `Flux.Chain` and comes with many of the same features, such as parameter collection, indexing, slicing, etc. The big change is that the first input to a `TopoChain` is a `FuncTopo`, which specifies how the layers should be called. This allows us to flexibly build complex architectures.
 
 ```@docs
 TopoChain
