@@ -19,16 +19,17 @@ end
 """
     @nntopo structure
 
-Create an `NNTopo` to apply functions according to the given `structure`.
+Create a `NNTopo` to apply functions according to the given `structure`.
 
 # Example
 ```jldoctest
-julia> @nntopo x:x => h1:x => h2:(h1, h2) => o
-NNTopo{"x:x => (h1:x => (h2:(h1, h2) => o))"}
-function(model, x)
-    h1 = model[1](x)
-    h2 = model[2](x)
-    o = model[3](h1, h2)
+julia> @nntopo (x1, x2):(x1, x2) => a:x1 => b:(a, b) => c => o
+NNTopo{"(x1, x2):(x1, x2) => (a:x1 => (b:(a, b) => (c => o)))"}
+function(model, x1, x2)
+    a = model[1](x1, x2)
+    b = model[2](x1)
+    c = model[3](a, b)
+    o = model[4](c)
     o
 end
 ```

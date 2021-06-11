@@ -3,7 +3,7 @@ module Stacks
 using Requires
 
 export NNTopo, @nntopo_str, @nntopo
-export Stack, show_stackfunc
+export Stack
 
 include("code.jl")
 include("topology.jl")

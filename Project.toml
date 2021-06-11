@@ -1,6 +1,5 @@
 name = "Stacks"
 uuid = "21ca0261-441d-5938-ace7-c90938fde4d4"
-authors = ["irhum <13271155+irhum@users.noreply.github.com>", "chengchingwen <adgjl5645@hotmail.com>"]
 version = "0.1.0"
 
 [deps]
@@ -11,7 +10,8 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 julia = "1.5, 1.6"
 
 [extras]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "Flux"]

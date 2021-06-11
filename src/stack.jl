@@ -3,7 +3,27 @@ using MacroTools: @forward, postwalk
 """
     Stack(topo::NNTopo, layers...)
 
-Like Flux.Chain, but you can use a NNTopo to define the order/structure of the function called.
+Similar to a Flux.Chain, with the addition of the use of an NNTopo to define the order/structure of the functions called.
+
+# Example
+```jldoctest
+julia> topo = @nntopo (x1, x2):x1 => a:x2 => b:(a, b) => c => o
+
+julia> model = Stack(topo,
+                Dense(32, 64),
+                Dense(32, 64),
+                (x, y) -> x .* y, 
+                Dropout(0.1))
+
+Stack(Dense(32, 64), Dense(32, 64), #19, Dropout(0.1)) representing the following function composition: 
+function(x1, x2)
+    a = Dense(32, 64)(x1)
+    b = Dense(32, 64)(x2)
+    c = #19(a, b)
+    o = Dropout(0.1)(c)
+    o
+end
+```
 """
 struct Stack{T<:Tuple, FS}
     models::T

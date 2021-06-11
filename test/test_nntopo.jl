@@ -39,12 +39,12 @@ k(a, b, c) = (a + b) / c
 
         redirect_stdout(STDOUT)
 
-        @test topo_string == """topo_func(model, x1, x2, x3, x4)
-	t = f1(x1, x2)
-	(z1, z2) = g1(t, x3)
-	w = h1(x4, z1)
-	y = k(x2, z2, w)
-	y
+        @test topo_string == """function(x1, x2, x3, x4)
+    t = f1(x1, x2)
+    (z1, z2) = g1(t, x3)
+    w = h1(x4, z1)
+    y = k(x2, z2, w)
+    y
 end
 """
     end
@@ -63,15 +63,15 @@ end
 
         redirect_stdout(STDOUT)
 
-        @test topo_string == """topo_func(model, e, m, mask)
-	pe = model[1](e)
-	t = model[2](e, pe)
-	t = model[3](t)
-	t = model[4](t, m, mask)
-	t = model[5](t, m, mask)
-	t = model[6](t, m, mask)
-	c = model[7](t)
-	c
+        @test topo_string == """function(model, e, m, mask)
+    pe = model[1](e)
+    t = model[2](e, pe)
+    t = model[3](t)
+    t = model[4](t, m, mask)
+    t = model[5](t, m, mask)
+    t = model[6](t, m, mask)
+    c = model[7](t)
+    c
 end
 """
     end
@@ -91,15 +91,15 @@ end
 
         redirect_stdout(STDOUT)
 
-        @test topo_string == """topo_func(model, e, m, mask)
-	pe = model[1](e)
-	t = model[2](e, pe)
-	t = model[3](t)
-	t = model[4](t, m, mask)
-	t = model[5](t, m, mask)
-	t = model[6](t, m, mask)
-	c = model[7](t)
-	c
+        @test topo_string == """function(model, e, m, mask)
+    pe = model[1](e)
+    t = model[2](e, pe)
+    t = model[3](t)
+    t = model[4](t, m, mask)
+    t = model[5](t, m, mask)
+    t = model[6](t, m, mask)
+    c = model[7](t)
+    c
 end
 """
     end
@@ -118,23 +118,23 @@ end
 
         redirect_stdout(STDOUT)
 
-        @test topo_string == """topo_func(model, x)
-	y = model[1](x)
-	z = model[2](y)
-	t = model[3](z)
-	z = model[4](t)
-	t = model[5](z)
-	z = model[6](t)
-	t = model[7](z)
-	w = model[8](t)
-	z = model[9](w)
-	t = model[10](z)
-	z = model[11](t)
-	t = model[12](z)
-	z = model[13](t)
-	t = model[14](z)
-	w = model[15](t)
-	w
+        @test topo_string == """function(model, x)
+    y = model[1](x)
+    z = model[2](y)
+    t = model[3](z)
+    z = model[4](t)
+    t = model[5](z)
+    z = model[6](t)
+    t = model[7](z)
+    w = model[8](t)
+    z = model[9](w)
+    t = model[10](z)
+    z = model[11](t)
+    t = model[12](z)
+    z = model[13](t)
+    t = model[14](z)
+    w = model[15](t)
+    w
 end
 """
     end
@@ -150,37 +150,21 @@ end
         close(outRead)
 
         redirect_stdout(STDOUT)
-        if v"1.0.0" <= VERSION  <= v"1.2.0"
-            @test topo_string == """topo_func(model, x)
-	y = model[1](x)
-	%1 = y
-	y = model[2](y)
-	%2 = y
-	y = model[3](y)
-	%3 = y
-	y = model[4](y)
-	%4 = y
-	z = model[5](y)
-	(z, (%1, %2, %3, %4))
+        
+        @test topo_string == """function(model, x)
+    y = model[1](x)
+    %1 = y
+    y = model[2](y)
+    %2 = y
+    y = model[3](y)
+    %3 = y
+    y = model[4](y)
+    %4 = y
+    z = model[5](y)
+    (z, (var"%1", var"%2", var"%3", var"%4"))
 end
-"""
-        else
-            @test topo_string == """topo_func(model, x)
-	y = model[1](x)
-	%1 = y
-	y = model[2](y)
-	%2 = y
-	y = model[3](y)
-	%3 = y
-	y = model[4](y)
-	%4 = y
-	z = model[5](y)
-	(z, (var"%1", var"%2", var"%3", var"%4"))
-end
-"""
-        end
+""" 
     end
-
 
     let STDOUT = stdout
         (outRead, outWrite) = redirect_stdout()
@@ -193,30 +177,17 @@ end
         close(outRead)
 
         redirect_stdout(STDOUT)
-        if v"1.0.0" <= VERSION  <= v"1.2.0"
-            @test topo_string == """topo_func(model, x, y)
-	(a, b, c, d) = model[1](x, y)
-	%1 = d
-	(w, r, y) = model[2](a, b, c, d)
-	%2 = (w, r)
-	(m, n) = model[3](w, r, y)
-	%3 = (m, n)
-	z = model[4](m, n)
-	(z, (%1, %2, %3))
+
+        @test topo_string == """function(model, x, y)
+    (a, b, c, d) = model[1](x, y)
+    %1 = d
+    (w, r, y) = model[2](a, b, c, d)
+    %2 = (w, r)
+    (m, n) = model[3](w, r, y)
+    %3 = (m, n)
+    z = model[4](m, n)
+    (z, (var"%1", var"%2", var"%3"))
 end
 """
-        else
-            @test topo_string == """topo_func(model, x, y)
-	(a, b, c, d) = model[1](x, y)
-	%1 = d
-	(w, r, y) = model[2](a, b, c, d)
-	%2 = (w, r)
-	(m, n) = model[3](w, r, y)
-	%3 = (m, n)
-	z = model[4](m, n)
-	(z, (var"%1", var"%2", var"%3"))
-end
-"""
-        end
     end
 end
