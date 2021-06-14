@@ -50,9 +50,9 @@ model
 
 ### Installation
 
-For the time being, the package can be installed with 
+You can get started by installing TopoChains.jl with the following command:
 ```
-] add https://github.com/irhum/TopoChains.jl
+] add TopoChains
 ```
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
