@@ -4,12 +4,12 @@ version = "0.1.0"
 
 [deps]
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 
 [compat]
 julia = "^1.6"
 MacroTools = "^0.5"
-Requires = "^1.1"
+Functors = "^0.2"
 
 [extras]
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"

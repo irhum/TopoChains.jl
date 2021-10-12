@@ -3,6 +3,11 @@
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[Functors]]
+git-tree-sha1 = "ee53f5bf9c098161629655b55e1462810f878f4f"
+uuid = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
+version = "0.2.6"
+
 [[MacroTools]]
 deps = ["Markdown", "Random"]
 git-tree-sha1 = "6a8a2a625ab0dea913aba95c11370589e0239ff0"
